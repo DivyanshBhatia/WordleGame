@@ -1,5 +1,6 @@
 # Simple Flask backend to proxy Wordle API requests
 from flask import Flask, jsonify
+from flask import request
 from flask_cors import CORS
 import requests
 import datetime
