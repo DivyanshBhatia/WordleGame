@@ -8,27 +8,43 @@ import pytz
 app = Flask(__name__)
 CORS(app)  # Allow cross-origin requests
 
+import random
+from datetime import datetime, timedelta
+
 @app.route('/wordle-word')
 def get_wordle_word():
     try:
+        # Get the 'today' parameter from query string, default to True
+        today_param = request.args.get('today', 'true').lower()
+        today = today_param == 'true'
+
         # Get current date in IST (Indian Standard Time)
         ist = pytz.timezone('Asia/Kolkata')
-        date = datetime.datetime.now(ist).date()
+        current_date = datetime.now(ist).date()
+
+        if today:
+            # Use current date
+            date = current_date
+        else:
+            # Generate random date within last 730 days (excluding today)
+            days_back = random.randint(1, 730)
+            date = current_date - timedelta(days=days_back)
 
         url = f"https://www.nytimes.com/svc/wordle/v2/{date:%Y-%m-%d}.json"
         response = requests.get(url)
         data = response.json()
+
         return jsonify({
             'solution': data['solution'].upper(),
             'date': str(date),
-            'timezone': 'IST'
+            'timezone': 'IST',
+            'is_today': today
         })
     except Exception as e:
         return jsonify({
             'error': str(e),
             'fallback': 'REACT'
         }), 500
-
 
 @app.route('/word-meaning/<word>')
 def get_word_meaning_endpoint(word):
