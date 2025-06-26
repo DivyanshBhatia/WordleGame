@@ -59,17 +59,22 @@ def get_word_meaning(word):
                 # Extract meanings
                 meanings = []
                 if 'meanings' in entry:
-                    for meaning in entry['meanings'][:2]:  # Limit to first 2 parts of speech
+                    for meaning in entry['meanings'][:3]:  # Limit to first 3 parts of speech
                         part_of_speech = meaning.get('partOfSpeech', '')
                         definitions = meaning.get('definitions', [])
 
                         if definitions:
-                            definition = definitions[0].get('definition', '')
-                            if definition:
-                                meanings.append({
-                                    'partOfSpeech': part_of_speech,
-                                    'definition': definition
-                                })
+                            i = 0
+                            while i < 5 and i < len(definitions):
+                                definition = definitions[i].get('definition', '')
+                                example = definitions[i].get('example', '')
+                                if definition:
+                                    meanings.append({
+                                        'partOfSpeech': part_of_speech,
+                                        'definition': definition,
+                                        'example': example
+                                    })
+                                i = i + 1
 
                 # Extract phonetics if available
                 phonetic = ''
