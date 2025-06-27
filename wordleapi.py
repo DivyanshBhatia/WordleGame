@@ -28,7 +28,7 @@ def get_wordle_word():
             date = current_date
         else:
             # Generate random date within last 730 days (excluding today)
-            days_back = random.randint(1, 730)
+            days_back = random.randint(7, 1576)
             date = current_date - timedelta(days=days_back)
 
         url = f"https://www.nytimes.com/svc/wordle/v2/{date:%Y-%m-%d}.json"
