@@ -146,7 +146,7 @@ def get_meaning_from_free_dictionary(word):
                     'word': word.upper(),
                     'phonetic': phonetic,
                     'meanings': meanings,
-                    'source': 'Free Dictionary API'
+                    'source': 'Free Dictionary API',
                     'hindi_translation': hindi_translation if hindi_translation else ''
                 }
 
@@ -192,7 +192,7 @@ def get_meaning_from_merriam_webster_collegiate(word):
                         'word': word.upper(),
                         'phonetic': phonetic,
                         'meanings': meanings,
-                        'source': 'Merriam-Webster Collegiate'
+                        'source': 'Merriam-Webster Collegiate',
                         'hindi_translation': hindi_translation if hindi_translation else ''
                     }
 
@@ -238,7 +238,7 @@ def get_meaning_from_merriam_webster_learners(word):
                         'word': word.upper(),
                         'phonetic': phonetic,
                         'meanings': meanings,
-                        'source': 'Merriam-Webster Learners'
+                        'source': 'Merriam-Webster Learners',
                         'hindi_translation': hindi_translation if hindi_translation else ''
                     }
 
