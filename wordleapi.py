@@ -5,7 +5,7 @@ from flask_cors import CORS
 import requests
 import datetime
 import pytz
-from googletrans import Translator
+from deep_translator import GoogleTranslator
 
 app = Flask(__name__)
 CORS(app)  # Allow cross-origin requests
@@ -66,14 +66,18 @@ def get_word_meaning_endpoint(word):
 def get_hindi_translation(word):
     """Get Hindi translation of the word"""
     try:
-        # Method 1: Using googletrans (no API key needed)
-        translated = translator.translate(word, src='en', dest='hi')
-        return translated.text
-
-        # Method 2: Using Google Cloud Translate (requires API key)
+        # Method 1: Using deep-translator (no API key needed) - RECOMMENDED
+        translator_dt = GoogleTranslator(source='en', target='hi')
+        return translator_dt.translate(word)
+        
+        # Method 2: Using googletrans (has cgi module issues in Python 3.13+)
+        # translated = translator.translate(word, src='en', dest='hi')
+        # return translated.text
+        
+        # Method 3: Using Google Cloud Translate (requires API key)
         # result = translate_client.translate(word, source_language='en', target_language='hi')
         # return result['translatedText']
-
+        
     except Exception as e:
         print(f"Error translating {word} to Hindi: {e}")
         return None
