@@ -5,6 +5,7 @@ from flask_cors import CORS
 import requests
 import datetime
 import pytz
+from googletrans import Translator
 
 app = Flask(__name__)
 CORS(app)  # Allow cross-origin requests
@@ -62,29 +63,44 @@ def get_word_meaning_endpoint(word):
             'word': word.upper()
         }), 404
 
+def get_hindi_translation(word):
+    """Get Hindi translation of the word"""
+    try:
+        # Method 1: Using googletrans (no API key needed)
+        translated = translator.translate(word, src='en', dest='hi')
+        return translated.text
+
+        # Method 2: Using Google Cloud Translate (requires API key)
+        # result = translate_client.translate(word, source_language='en', target_language='hi')
+        # return result['translatedText']
+
+    except Exception as e:
+        print(f"Error translating {word} to Hindi: {e}")
+        return None
+
 def get_word_meaning(word):
     """Fetch word meaning from multiple dictionary APIs with fallback"""
-    
+
     # Try primary API: Free Dictionary API
     meaning = get_meaning_from_free_dictionary(word)
     if meaning:
         return meaning
-    
+
     # Try fallback API 1: Merriam-Webster Collegiate Dictionary
     meaning = get_meaning_from_merriam_webster_collegiate(word)
     if meaning:
         return meaning
-    
+
     # Try fallback API 2: Merriam-Webster Learner's Dictionary
     meaning = get_meaning_from_merriam_webster_learners(word)
     if meaning:
         return meaning
-    
+
     # Try fallback API 3: Built-in Dictionary (last resort)
     meaning = get_builtin_dictionary_meaning(word)
     if meaning:
         return meaning
-    
+
     return None
 
 def get_meaning_from_free_dictionary(word):
@@ -125,12 +141,13 @@ def get_meaning_from_free_dictionary(word):
                         if p.get('text'):
                             phonetic = p['text']
                             break
-
+                hindi_translation = get_hindi_translation(word)
                 return {
                     'word': word.upper(),
                     'phonetic': phonetic,
                     'meanings': meanings,
                     'source': 'Free Dictionary API'
+                    'hindi_translation': hindi_translation if hindi_translation else ''
                 }
 
         return None
@@ -145,41 +162,42 @@ def get_meaning_from_merriam_webster_collegiate(word):
         API_KEY = "9967016c-b19b-431c-937c-f661c4606e5d"
         url = f"https://www.dictionaryapi.com/api/v3/references/collegiate/json/{word.lower()}?key={API_KEY}"
         response = requests.get(url, timeout=5)
-        
+
         if response.status_code == 200:
             data = response.json()
             if data and len(data) > 0 and isinstance(data[0], dict):
                 entry = data[0]
-                
+
                 meanings = []
                 if 'shortdef' in entry:
                     # Get the functional label (part of speech)
                     part_of_speech = entry.get('fl', 'unknown')
-                    
+
                     for definition in entry['shortdef'][:3]:  # Limit to 3 definitions
                         meanings.append({
                             'partOfSpeech': part_of_speech,
                             'definition': definition,
                             'example': ''
                         })
-                
+
                 # Get pronunciation if available
                 phonetic = ''
                 if 'hwi' in entry and 'prs' in entry['hwi']:
                     prs = entry['hwi']['prs']
                     if prs and len(prs) > 0 and 'mw' in prs[0]:
                         phonetic = f"/{prs[0]['mw']}/"
-                
+                hindi_translation = get_hindi_translation(word)
                 if meanings:
                     return {
                         'word': word.upper(),
                         'phonetic': phonetic,
                         'meanings': meanings,
                         'source': 'Merriam-Webster Collegiate'
+                        'hindi_translation': hindi_translation if hindi_translation else ''
                     }
-        
+
         return None
-        
+
     except Exception as e:
         print(f"Error fetching meaning from Merriam-Webster Collegiate for {word}: {e}")
         return None
@@ -190,41 +208,42 @@ def get_meaning_from_merriam_webster_learners(word):
         API_KEY = "80a563cd-5cf4-4ee1-afe7-1ca26f7b1b45"
         url = f"https://www.dictionaryapi.com/api/v3/references/learners/json/{word.lower()}?key={API_KEY}"
         response = requests.get(url, timeout=5)
-        
+
         if response.status_code == 200:
             data = response.json()
             if data and len(data) > 0 and isinstance(data[0], dict):
                 entry = data[0]
-                
+
                 meanings = []
                 if 'shortdef' in entry:
                     # Get the functional label (part of speech)
                     part_of_speech = entry.get('fl', 'unknown')
-                    
+
                     for definition in entry['shortdef'][:3]:  # Limit to 3 definitions
                         meanings.append({
                             'partOfSpeech': part_of_speech,
                             'definition': definition,
                             'example': ''
                         })
-                
+
                 # Get pronunciation if available
                 phonetic = ''
                 if 'hwi' in entry and 'prs' in entry['hwi']:
                     prs = entry['hwi']['prs']
                     if prs and len(prs) > 0 and 'mw' in prs[0]:
                         phonetic = f"/{prs[0]['mw']}/"
-                
+                hindi_translation = get_hindi_translation(word)
                 if meanings:
                     return {
                         'word': word.upper(),
                         'phonetic': phonetic,
                         'meanings': meanings,
                         'source': 'Merriam-Webster Learners'
+                        'hindi_translation': hindi_translation if hindi_translation else ''
                     }
-        
+
         return None
-        
+
     except Exception as e:
         print(f"Error fetching meaning from Merriam-Webster Learners for {word}: {e}")
         return None
@@ -319,13 +338,13 @@ def get_builtin_dictionary_meaning(word):
                 'source': 'Built-in Dictionary'
             }
         }
-        
+
         word_lower = word.lower()
         if word_lower in fallback_definitions:
             return fallback_definitions[word_lower]
-        
+
         return None
-        
+
     except Exception as e:
         print(f"Error fetching meaning from built-in dictionary for {word}: {e}")
         return None
